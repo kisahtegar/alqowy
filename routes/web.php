@@ -25,8 +25,14 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Need to logged in before create a transaction
-    Route::get('/checkout', [FrontController::class, 'checkout'])->name('front.checkout');
-    Route::get('/checkout/store', [FrontController::class, 'checkout_store'])->name('front.checkout.store');
+    Route::get('/checkout', [FrontController::class, 'checkout'])->name('front.checkout')
+    ->middleware('role:student');
+
+    Route::get('/checkout/store', [FrontController::class, 'checkout_store'])->name('front.checkout.store')
+    ->middleware('role:student');
+
+    Route::get('/learning/{course}/{courseVideoId}', [FrontController::class, 'learning'])->name('front.learning')
+    ->middleware('role:student|teacher|owner');
 
     // For admin section
     Route::prefix('admin')->name('admin.')->group(function () {
@@ -41,6 +47,14 @@ Route::middleware('auth')->group(function () {
 
         Route::resource('subscribe_transactions', SubscribeTransactionController::class)
         ->middleware('role:owner');
+
+        Route::get('/add/video/{course_id}', [CourseVideoController::class, 'create'])
+        ->middleware('role:teacher|owner')
+        ->name('course.add_video');
+
+        Route::post('/add/video/save/{course_id}', [CourseVideoController::class, 'store'])
+        ->middleware('role:teacher|owner')
+        ->name('course.add_video.save');
 
         Route::resource('course_videos', CourseVideoController::class)
         ->middleware('role:owner|teacher');
