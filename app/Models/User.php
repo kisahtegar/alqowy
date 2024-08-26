@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -50,5 +52,21 @@ class User extends Authenticatable
 
     public function courses() {
         return $this->belongsToMany(Course::class, 'course_students');
+    }
+
+    public function subscribe_transactions() {
+        return $this->hasMany(SubscribeTransaction::class);
+    }
+
+    public function hasActiveSubscriptions() {
+        $latestSubscription = $this->subscribe_transactions()->where('is_paid', true)->latest('updated_at')->first();
+
+        if (!$latestSubscription) {
+            return false;
+        }
+
+        $subscriptionEndDate = Carbon::parse($latestSubscription->subscription_start_date)->addMonths(1);
+
+        return Carbon::now()->lessThanOrEqualTo($subscriptionEndDate); // true == dia berlangganan
     }
 }
