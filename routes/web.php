@@ -10,15 +10,23 @@ use App\Http\Controllers\SubscribeTransactionController;
 use App\Http\Controllers\TeacherController;
 use Illuminate\Support\Facades\Route;
 
-// User without login
+/**
+ * Public Routes (Accessible without login)
+ */
 Route::get('/', [FrontController::class, 'index'])->name('front.index');
 Route::get('/details/{course:slug}', [FrontController::class, 'details'])->name('front.details');
 Route::get('/category/{course:slug}', [FrontController::class, 'category'])->name('front.category');
 Route::get('/pricing', [FrontController::class, 'pricing'])->name('front.pricing');
-
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+/**
+ * Routes requiring authentication
+ */
 Route::middleware('auth')->group(function () {
+
+    /**
+     * Profile management routes
+     */
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

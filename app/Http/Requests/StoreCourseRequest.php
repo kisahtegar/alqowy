@@ -4,13 +4,24 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * StoreCourseRequest
+ * 
+ * Handles validation for storing a new course. This request ensures that
+ * the input data for creating a course meets specific validation rules.
+ * 
+ * @package App\Http\Requests
+ */
 class StoreCourseRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
+     *
+     * @return bool
      */
     public function authorize(): bool
     {
+        // Authorization is checked to ensure only users with 'teacher' or 'owner' roles can make this request
         return $this->user()->hasAnyRole(['teacher', 'owner']);
     }
 

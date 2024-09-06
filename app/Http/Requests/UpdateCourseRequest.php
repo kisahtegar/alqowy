@@ -4,13 +4,24 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * UpdateCourseRequest
+ * 
+ * Handles validation for updating an existing course. This request ensures
+ * that the input data for updating a course meets the specified validation rules.
+ * 
+ * @package App\Http\Requests
+ */
 class UpdateCourseRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
+     *
+     * @return bool
      */
     public function authorize(): bool
     {
+        // Authorization is checked to ensure only users with the 'teacher' or 'owner' roles can make this request
         return $this->user()->hasAnyRole(['teacher', 'owner']);
     }
 

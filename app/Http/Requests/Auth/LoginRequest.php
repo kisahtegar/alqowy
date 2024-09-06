@@ -9,6 +9,15 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * LoginRequest
+ * 
+ * Handles validation and authentication for user login requests. This class
+ * ensures that login attempts are validated and rate-limited to prevent abuse.
+ * 
+ * @package App\Http\Requests\Auth
+ */
+
 class LoginRequest extends FormRequest
 {
     /**
@@ -39,16 +48,21 @@ class LoginRequest extends FormRequest
      */
     public function authenticate(): void
     {
+        // Ensure the request is not rate limited
         $this->ensureIsNotRateLimited();
 
+        // Attempt to authenticate the user with the provided email and password
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+            // If authentication fails, hit the rate limiter
             RateLimiter::hit($this->throttleKey());
 
+            // Throw validation exception with failure message
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
             ]);
         }
 
+        // Clear the rate limiter if authentication is successful
         RateLimiter::clear($this->throttleKey());
     }
 
@@ -59,14 +73,18 @@ class LoginRequest extends FormRequest
      */
     public function ensureIsNotRateLimited(): void
     {
+        // Check if the number of attempts exceeds the limit
         if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
             return;
         }
 
+        // Trigger lockout event
         event(new Lockout($this));
 
+        // Get the number of seconds until the request can be retried
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
+        // Throw validation exception with throttle message
         throw ValidationException::withMessages([
             'email' => trans('auth.throttle', [
                 'seconds' => $seconds,
@@ -80,6 +98,7 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
+        // Generate a unique throttle key based on the email and IP address
         return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
     }
 }
