@@ -51,6 +51,8 @@
                         <img src="{{Storage::url($subscribeTransaction->proof)}}" alt="">
                     </div>
                 </div>
+                @if ($subscribeTransaction->is_paid)
+                @else
                 <hr class="my-5">
                 <form action="{{route('admin.subscribe_transactions.update', $subscribeTransaction)}}" method="POST">
                     @csrf
@@ -59,6 +61,7 @@
                         Approve Transaction
                     </button>
                 </form>
+                @endif
             </div>
         </div>
     </div>
