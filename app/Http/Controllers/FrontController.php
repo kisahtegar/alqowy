@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreSubscribeTransactionRequest;
+use App\Models\Category;
 use App\Models\Course;
 use App\Models\SubscribeTransaction;
 use Illuminate\Http\Request;
@@ -57,26 +58,69 @@ class FrontController extends Controller
      * Display the pricing page.
      *
      * This function renders the pricing page where users can view subscription plans 
-     * or payment-related information.
+     * or payment-related information. If the user is logged in and already has an active 
+     * subscription, they are redirected to the home page.
      *
-     * @return \Illuminate\View\View The view rendering the pricing page.
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\View\View
      */
     public function pricing() 
     {
+        // Check if the user is authenticated
+        if (Auth::check()) {
+            $user = Auth::user();
+
+            // If the user has an active subscription, redirect them to the index page
+            if ($user->hasActiveSubscriptions()) {
+                return redirect()->route('front.index');
+            }
+        }
+
         // Return the 'front.pricing' view to display the pricing page
         return view('front.pricing');
+    }
+
+    /**
+     * Display the category page with the courses in the given category.
+     *
+     * This function fetches all the courses associated with a given category 
+     * and displays them on the category page. 
+     *
+     * @param \App\Models\Category $category The category model instance
+     * @return \Illuminate\View\View The view rendering the category page with associated courses.
+     */
+    public function category(Category $category) 
+    {
+        // Eager load related models to prevent N+1 query issues
+        $courses = $category->courses()->with(['teacher', 'students', 'category'])->get();
+
+        // Return the 'front.category' view to display the category page
+        return view('front.category', compact('courses', 'category'));
     }
 
     /**
      * Display the checkout page.
      *
      * This function renders the checkout page, allowing users to finalize their subscription
-     * and payment process.
+     * and payment process. If the user is logged in and has an active subscription,
+     * they are redirected to the index page.
      *
-     * @return \Illuminate\View\View The view rendering the checkout page.
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\View\View
      */
     public function checkout() 
     {
+        // Check if the user is authenticated
+        if (Auth::check()) {
+            $user = Auth::user();
+
+            // If the user has an active subscription, redirect them to the index page
+            if ($user->hasActiveSubscriptions()) {
+                return redirect()->route('front.index');
+            }
+        } else {
+            // If the user is not authenticated, redirect them to the login page
+            return redirect()->route('login');
+        }
+
         // Return the 'front.checkout' view to display the checkout page
         return view('front.checkout');
     }
