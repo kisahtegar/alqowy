@@ -24,7 +24,7 @@
 
                     @role('owner')
                     <x-nav-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.index')">
-                        {{ __('Manage Caategories') }}
+                        {{ __('Manage Categories') }}
                     </x-nav-link>
                     <x-nav-link :href="route('admin.teachers.index')" :active="request()->routeIs('admin.teachers.index')">
                         {{ __('Manage Teachers') }}
